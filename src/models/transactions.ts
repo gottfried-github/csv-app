@@ -14,7 +14,7 @@ class Transactions {
 
   async createTable() {
     const res = await db.run(
-      `CREATE TABLE ${this.tableName} IF NOT EXISTS
+      `CREATE TABLE IF NOT EXISTS ${this.tableName}
       ( 
         TransactionId TEXT NOT NULL, 
         Status TEXT NOT NULL, 
