@@ -1,5 +1,7 @@
 'use client'
 
+import axios from 'axios'
+import { useQuery } from '@tanstack/react-query'
 import styled from '@emotion/styled'
 import {
   Input,
@@ -8,17 +10,25 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
-  Td,
-  TableCaption,
   TableContainer,
   Flex,
   Center,
 } from '@chakra-ui/react'
 
 const Transactions = () => {
+  const { data, refetch } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const { data } = await axios.get('/transactions')
+
+      return data
+    },
+  })
+
+  console.log('Transactions, data:', data)
+
   return (
     <Container direction="column">
       <Input />

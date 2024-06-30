@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
+import ReactQueryWrapper from './components/ReactQueryWrapper'
 import ChakraWrapper from './components/ChakraWrapper'
 import './globals.css'
 
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ChakraWrapper>{children}</ChakraWrapper>
+        <ReactQueryWrapper>
+          <ChakraWrapper>{children}</ChakraWrapper>
+        </ReactQueryWrapper>
       </body>
     </html>
   )
