@@ -6,7 +6,10 @@ export type GetManyProps = {
   columns?: string[]
   filters?: Filter[]
   searchQuery?: string
-  sortAsc?: boolean
+  sort?: {
+    column: string
+    asc: boolean
+  }
   page?: number
 }
 
@@ -80,7 +83,13 @@ class Transactions {
     return db.run(`UPDATE ${this.tableName} SET Status = ? WHERE TransactionId = ?`, [status, id])
   }
 
-  async getMany({ columns, filters, searchQuery, sortAsc = true, page = 0 }: GetManyProps) {
+  async getMany({
+    columns,
+    filters,
+    searchQuery,
+    sort = { column: 'name', asc: true },
+    page = 0,
+  }: GetManyProps) {
     /* Construct the SQL query */
 
     /* column names */
@@ -114,7 +123,9 @@ class Transactions {
     filtersQuery += searchQueryExpression
 
     /* sort and pagination */
-    const sortQuery = `ORDER BY ClientName ${sortAsc ? 'ASC' : 'DESC'}`
+    const sortQuery = `ORDER BY ${COLUMNS_NAMES[sort.column] || COLUMNS_NAMES.name} ${
+      sort.asc ? 'ASC' : 'DESC'
+    }`
     const paginationQuery = `LIMIT ${PAGE_SIZE}${page > 0 ? ' OFFSET $offset' : ''}`
 
     /* the whole query */
