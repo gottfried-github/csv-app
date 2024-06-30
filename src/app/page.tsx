@@ -1,9 +1,11 @@
-import FileUploaderWithoutAction from './components/FileUploaderWithoutAction'
+import Transactions from './components/Transactions/Transactions'
+
+import classes from './page.module.css'
 
 export default function Home() {
   return (
-    <main>
-      <FileUploaderWithoutAction />
+    <main className={classes.main}>
+      <Transactions />
     </main>
   )
 }
