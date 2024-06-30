@@ -15,7 +15,7 @@ const FileUploaderWithoutAction = () => {
 
     formData.append('file', file)
 
-    fetch('http://localhost:3000/csv', {
+    fetch('http://localhost:3000/transactions/csv', {
       method: 'POST',
       body: formData,
     })
