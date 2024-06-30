@@ -87,7 +87,7 @@ class Transactions {
     columns,
     filters,
     searchQuery,
-    sort = { column: 'name', asc: true },
+    sort = { column: 'clientName', asc: true },
     page = 0,
   }: GetManyProps) {
     /* Construct the SQL query */
@@ -123,7 +123,7 @@ class Transactions {
     filtersQuery += searchQueryExpression
 
     /* sort and pagination */
-    const sortQuery = `ORDER BY ${COLUMNS_NAMES[sort.column] || COLUMNS_NAMES.name} ${
+    const sortQuery = `ORDER BY ${COLUMNS_NAMES[sort.column] || COLUMNS_NAMES.clientName} ${
       sort.asc ? 'ASC' : 'DESC'
     }`
     const paginationQuery = `LIMIT ${PAGE_SIZE}${page > 0 ? ' OFFSET $offset' : ''}`
@@ -146,7 +146,29 @@ class Transactions {
     if (page > 0) params.$offset = page * PAGE_SIZE
 
     /* Make the query */
-    return db.all<Transaction[]>(query, params)
+    const transactions = await db.all<Transaction[]>(query, params)
+
+    /* Get filters and pagination data */
+    const countQuery = `SELECT COUNT(*) FROM ${this.tableName}${
+      filtersQuery ? ` WHERE ${filtersQuery}` : ''
+    }`
+
+    const count = await db.all<Record<string, number>[]>(countQuery, params)
+    const types = await db.all<Transaction[]>(
+      `SELECT DISTINCT ${FILTERS_NAMES.type} FROM ${this.tableName}`
+    )
+    const statuses = await db.all<Transaction[]>(
+      `SELECT DISTINCT ${FILTERS_NAMES.status} FROM ${this.tableName}`
+    )
+
+    return {
+      count: count[0]['COUNT(*)'],
+      filters: {
+        type: types.map(type => type[FILTERS_NAMES.type as keyof Transaction]),
+        status: statuses.map(status => status[FILTERS_NAMES.status as keyof Transaction]),
+      },
+      transactions,
+    }
   }
 }
 
