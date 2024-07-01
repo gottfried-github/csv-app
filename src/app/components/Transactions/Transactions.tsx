@@ -20,10 +20,12 @@ import {
 } from '@chakra-ui/react'
 
 import { Transaction } from '@/types/transactions'
+import { throttle } from '@/utils/utils'
 
 const PAGE_SIZE = 15
 
 const Transactions = () => {
+  const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [sortName, setSortName] = useState('clientName')
@@ -45,7 +47,15 @@ const Transactions = () => {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['transactions', filterType, filterStatus],
+    queryKey: [
+      'transactions',
+      searchQuery,
+      filterType,
+      filterStatus,
+      sortName,
+      sortAsc,
+      pageCurrent,
+    ],
     queryFn: async () => {
       const params = new URLSearchParams()
 
@@ -55,6 +65,10 @@ const Transactions = () => {
 
       if (filterStatus) {
         params.append('status', filterStatus)
+      }
+
+      if (searchQuery) {
+        params.append('search', searchQuery)
       }
 
       params.append('page', pageCurrent.toString())
@@ -69,16 +83,20 @@ const Transactions = () => {
     },
   })
 
-  useEffect(() => {
-    refetch()
-  }, [filterType, filterStatus, sortName, sortAsc, pageCurrent])
-
   const data = useMemo(
     () => (isLoading ? dataInitial : dataDynamic),
     [dataInitial, dataDynamic, isLoading]
   )
 
   const pageCount = useMemo(() => Math.ceil(data.count / PAGE_SIZE), [data.count])
+
+  const handleSearchInput = useMemo(
+    () =>
+      throttle((ev: InputEvent) => {
+        setSearchQuery((ev.target as HTMLInputElement).value)
+      }, 150),
+    []
+  )
 
   const handleTypeChange = (ev: ChangeEvent<HTMLSelectElement>) => {
     setFilterType(ev.target.value)
@@ -114,7 +132,7 @@ const Transactions = () => {
     <>
       {data ? (
         <Container direction="column">
-          <Input />
+          <Input onInput={handleSearchInput} />
           <Flex justify="space-between">
             <FlexHorizontal>
               <Select placeholder="All types" onChange={handleTypeChange}>
