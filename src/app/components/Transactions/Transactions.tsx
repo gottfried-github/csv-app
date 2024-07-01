@@ -21,6 +21,7 @@ import {
 
 import { Transaction } from '@/types/transactions'
 import { throttle } from '@/utils/utils'
+import Edit from './components/Edit'
 
 const PAGE_SIZE = 15
 
@@ -31,6 +32,8 @@ const Transactions = () => {
   const [sortName, setSortName] = useState('clientName')
   const [sortAsc, setSortAsc] = useState(true)
   const [pageCurrent, setPageCurrent] = useState(0)
+  const [transactionCurrent, setTransactionCurrent] = useState<Transaction | null>(null)
+  const [isEditOpen, setIsEditOpen] = useState(false)
 
   const { data: dataInitial } = useQuery({
     queryKey: ['transactions'],
@@ -41,21 +44,18 @@ const Transactions = () => {
     },
   })
 
+  const queryKey = useMemo(
+    () => ['transactions', searchQuery, filterType, filterStatus, sortName, sortAsc, pageCurrent],
+    [searchQuery, filterType, filterStatus, sortName, sortAsc, pageCurrent]
+  )
+
   const {
     data: dataDynamic,
     isSuccess,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: [
-      'transactions',
-      searchQuery,
-      filterType,
-      filterStatus,
-      sortName,
-      sortAsc,
-      pageCurrent,
-    ],
+    queryKey,
     queryFn: async () => {
       const params = new URLSearchParams()
 
@@ -128,6 +128,16 @@ const Transactions = () => {
     setPageCurrent(pageCurrent + 1)
   }
 
+  const handleEditClick = (transaction: Transaction) => {
+    setTransactionCurrent(transaction)
+    setIsEditOpen(true)
+  }
+
+  const handleEditClose = () => {
+    setIsEditOpen(false)
+    setTransactionCurrent(null)
+  }
+
   return (
     <>
       {data ? (
@@ -182,7 +192,18 @@ const Transactions = () => {
                     <Td>{transaction.Type}</Td>
                     <Td>{transaction.ClientName}</Td>
                     <Td>{transaction.Amount}</Td>
-                    <Td>Actions</Td>
+                    <Td>
+                      <FlexHorizontal>
+                        <Button
+                          onClick={() => {
+                            handleEditClick(transaction)
+                          }}
+                        >
+                          Edit Status
+                        </Button>
+                        <Button>Delete</Button>
+                      </FlexHorizontal>
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>
@@ -198,6 +219,15 @@ const Transactions = () => {
               </Button>
             </FlexHorizontal>
           </Center>
+          {transactionCurrent ? (
+            <Edit
+              transaction={transactionCurrent}
+              statuses={data.filters.status}
+              queryKey={queryKey}
+              isOpen={isEditOpen}
+              handleClose={handleEditClose}
+            />
+          ) : null}
         </Container>
       ) : null}
     </>
@@ -210,6 +240,6 @@ const Container = styled(Flex)`
   row-gap: 16px;
 `
 
-const FlexHorizontal = styled(Flex)`
+export const FlexHorizontal = styled(Flex)`
   column-gap: 6px;
 `
