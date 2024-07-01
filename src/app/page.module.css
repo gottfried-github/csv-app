@@ -1,6 +1,5 @@
 .main {
   max-width: 1440px;
   
-  margin: auto;
-  margin-top: 35px;
+  margin: 35px auto;
 }

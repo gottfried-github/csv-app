@@ -22,10 +22,10 @@ class Transactions {
   }
 
   async exportCsv() {
-    const transactions = await transactionsModel.getMany({})
+    const data = await transactionsModel.getMany({})
 
     return new Promise((resolve, reject) => {
-      stringify(transactions, { header: true }, (e, csv) => {
+      stringify(data.transactions, { header: true }, (e, csv) => {
         if (e) return reject(e)
 
         resolve(csv)

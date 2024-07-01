@@ -54,6 +54,16 @@ class Transactions {
 
   async insertMany(transactions: Transaction[]) {
     for (const transaction of transactions) {
+      if (
+        !transaction.TransactionId ||
+        !transaction.Status ||
+        !transaction.Type ||
+        !transaction.ClientName ||
+        !transaction.Amount
+      ) {
+        return
+      }
+
       await db.run(
         `INSERT INTO ${this.tableName} 
           ( TransactionId, Status, Type, ClientName, Amount )
@@ -90,6 +100,8 @@ class Transactions {
     sort = { column: 'clientName', asc: true },
     page = 0,
   }: GetManyProps) {
+    if (typeof page !== 'number') throw new TypeError('page is not a number')
+
     /* Construct the SQL query */
 
     /* column names */
@@ -126,7 +138,7 @@ class Transactions {
     const sortQuery = `ORDER BY ${COLUMNS_NAMES[sort.column] || COLUMNS_NAMES.clientName} ${
       sort.asc ? 'ASC' : 'DESC'
     }`
-    const paginationQuery = `LIMIT ${PAGE_SIZE}${page > 0 ? ' OFFSET $offset' : ''}`
+    const paginationQuery = `LIMIT ${PAGE_SIZE}${page > 0 ? ` OFFSET ${page * PAGE_SIZE}` : ''}`
 
     /* the whole query */
     const query = `SELECT ${columnsQuery} FROM ${this.tableName}${
@@ -143,7 +155,6 @@ class Transactions {
     })
 
     if (searchQuery) params.$searchQuery = `%${searchQuery}%`
-    if (page > 0) params.$offset = page * PAGE_SIZE
 
     /* Make the query */
     const transactions = await db.all<Transaction[]>(query, params)

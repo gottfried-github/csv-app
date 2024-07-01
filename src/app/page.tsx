@@ -16,10 +16,10 @@ export default async function Home() {
   })
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <main className={classes.main}>
+    <main className={classes.main}>
+      <HydrationBoundary state={dehydrate(queryClient)}>
         <Transactions />
-      </main>
-    </HydrationBoundary>
+      </HydrationBoundary>
+    </main>
   )
 }
