@@ -18,6 +18,7 @@ import {
 
 import { Transaction } from '@/types/transactions'
 import { FlexHorizontal } from '../Transactions'
+import React, { ReactNode } from 'react'
 
 interface Props {
   transaction: Transaction
@@ -28,6 +29,47 @@ interface Props {
 }
 
 const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) => {
+  // const mutation = useMutation({})
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    trigger,
+    control,
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: {
+      status: transaction.Status,
+    },
+    resolver: values => {
+      const errors: { status?: string } = {}
+
+      if (!values.status) {
+        errors.status = 'Status is required'
+
+        return {
+          values,
+          errors,
+        }
+      }
+
+      if (!statuses.includes(values.status)) {
+        errors.status = 'Invalid status'
+      }
+
+      console.log('resolver, values, errors:', values, errors)
+
+      return {
+        values,
+        errors,
+      }
+    },
+  })
+
+  // const handleSubmitInner = values => {}
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
@@ -36,19 +78,15 @@ const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) =
         <ModalCloseButton />
 
         <ModalBody>
-          <FormControl>
-            <Select>
-              {statuses.map(status =>
-                transaction.Status === status ? (
-                  <option selected value={status}>
-                    {status}
-                  </option>
-                ) : (
-                  <option value={status}>{status}</option>
-                )
-              )}
+          <FormControl isInvalid={!!errors.status}>
+            <Select {...register('status')}>
+              {statuses.map(status => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
             </Select>
-            <FormErrorMessage>Status is invalid</FormErrorMessage>
+            <FormErrorMessage>{(errors.status as ReactNode) || ''}</FormErrorMessage>
           </FormControl>
         </ModalBody>
 
