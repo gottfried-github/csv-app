@@ -24,6 +24,7 @@ import { Transaction } from '@/types/transactions'
 import { throttle } from '@/utils/utils'
 import Edit from './components/Edit'
 import DeleteDialog from './components/DeleteDialog'
+import ExportModal from './components/ExportModal'
 
 const PAGE_SIZE = 15
 
@@ -37,6 +38,7 @@ const Transactions = () => {
   const [transactionCurrent, setTransactionCurrent] = useState<Transaction | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -136,8 +138,23 @@ const Transactions = () => {
     })
   }
 
-  const handleExportClick = async () => {
-    const { data } = await axios.get('/transactions/csv')
+  const handleOpenExportClick = () => {
+    setIsExportOpen(true)
+  }
+
+  const handleCloseExportClick = () => {
+    setIsExportOpen(false)
+  }
+
+  const handleExportClick = async (columns: string[]) => {
+    console.log('handleExportClick', columns)
+
+    const params = columns.length ? new URLSearchParams() : null
+    if (params) {
+      params.append('columns', columns.join())
+    }
+
+    const { data } = await axios.get(`/transactions/csv${params ? `?${params.toString()}` : ''}`)
 
     const anchorEl = document.createElement('a')
     anchorEl.innerText = 'download'
@@ -229,7 +246,7 @@ const Transactions = () => {
               >
                 Import
               </ImportButton>
-              <Button onClick={handleExportClick}>Export</Button>
+              <Button onClick={handleOpenExportClick}>Export</Button>
             </FlexHorizontal>
           </Flex>
           <TableContainer>
@@ -303,6 +320,12 @@ const Transactions = () => {
                 />
               ) : null}
             </>
+          ) : null}
+          {isExportOpen ? (
+            <ExportModal
+              handlePickColumns={handleExportClick}
+              handleClose={handleCloseExportClick}
+            />
           ) : null}
         </Container>
       ) : null}

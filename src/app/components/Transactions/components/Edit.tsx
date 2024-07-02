@@ -28,11 +28,10 @@ interface Props {
   transaction: Transaction
   statuses: string[]
   queryKey: (string | number | boolean)[]
-  // isOpen: boolean
   handleClose: () => void
 }
 
-const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) => {
+const Edit = ({ transaction, statuses, queryKey, handleClose }: Props) => {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
