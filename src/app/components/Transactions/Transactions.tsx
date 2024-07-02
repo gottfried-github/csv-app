@@ -120,7 +120,7 @@ const Transactions = () => {
     setSortAsc(!sortAsc)
   }
 
-  const handleFileInputChange = async (ev: ChangeEvent<HTMLInputElement>) => {
+  const handleImportFileInputChange = async (ev: ChangeEvent<HTMLInputElement>) => {
     if (!ev.target.files?.length) return
 
     const file = ev.target.files?.[0]
@@ -134,6 +134,21 @@ const Transactions = () => {
     queryClient.invalidateQueries({
       queryKey,
     })
+  }
+
+  const handleExportClick = async () => {
+    const { data } = await axios.get('/transactions/csv')
+
+    const anchorEl = document.createElement('a')
+    anchorEl.innerText = 'download'
+    anchorEl.href = `data:application/octet-stream,${encodeURIComponent(data.data)}`
+    anchorEl.setAttribute('download', 'transactions.csv')
+    anchorEl.style.display = 'none'
+
+    document.body.appendChild(anchorEl)
+    anchorEl.click()
+
+    document.body.removeChild(anchorEl)
   }
 
   const handlePreviousClick = () => {
@@ -203,7 +218,7 @@ const Transactions = () => {
                 multiple={false}
                 accept=".csv"
                 hidden
-                onChange={handleFileInputChange}
+                onChange={handleImportFileInputChange}
                 id="import"
               />
               <ImportButton
@@ -214,7 +229,7 @@ const Transactions = () => {
               >
                 Import
               </ImportButton>
-              <Button>Export</Button>
+              <Button onClick={handleExportClick}>Export</Button>
             </FlexHorizontal>
           </Flex>
           <TableContainer>

@@ -19,9 +19,11 @@ export const POST = async (req: NextRequest) => {
   }
 }
 
-export const GET = async () => {
+export const GET = async (req: NextRequest) => {
+  const config = parseSearchParams(req.nextUrl.searchParams)
+
   try {
-    const csv = await transactionsService.exportCsv()
+    const csv = await transactionsService.exportCsv(config)
 
     return Response.json({ message: 'exported data succesfully', data: csv }, { status: 200 })
   } catch (e) {

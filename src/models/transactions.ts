@@ -94,7 +94,6 @@ class Transactions {
   }
 
   async getMany({
-    columns,
     filters,
     searchQuery,
     sort = { column: 'clientName', asc: true },
@@ -103,18 +102,6 @@ class Transactions {
     if (typeof page !== 'number') throw new TypeError('page is not a number')
 
     /* Construct the SQL query */
-
-    /* column names */
-    let columnsQuery = ''
-
-    columns?.forEach(column => {
-      if (!COLUMNS_NAMES[column]) return
-
-      columnsQuery += `${columnsQuery ? ', ' : ''}${COLUMNS_NAMES[column]}`
-    })
-
-    columnsQuery = columnsQuery ? columnsQuery : '*'
-
     /* filters */
     let filtersQuery = ''
 
@@ -141,7 +128,7 @@ class Transactions {
     const paginationQuery = `LIMIT ${PAGE_SIZE}${page > 0 ? ` OFFSET ${page * PAGE_SIZE}` : ''}`
 
     /* the whole query */
-    const query = `SELECT ${columnsQuery} FROM ${this.tableName}${
+    const query = `SELECT * FROM ${this.tableName}${
       filtersQuery ? ` WHERE ${filtersQuery}` : ''
     } ${sortQuery} ${paginationQuery}`
 
@@ -180,6 +167,21 @@ class Transactions {
       },
       transactions,
     }
+  }
+
+  async getAll({ columns }: GetManyProps) {
+    /* column names */
+    let columnsQuery = ''
+
+    columns?.forEach(column => {
+      if (!COLUMNS_NAMES[column]) return
+
+      columnsQuery += `${columnsQuery ? ', ' : ''}${COLUMNS_NAMES[column]}`
+    })
+
+    columnsQuery = columnsQuery ? columnsQuery : '*'
+
+    return db.all<Transaction[]>(`SELECT ${columnsQuery} FROM ${this.tableName}`)
   }
 }
 
