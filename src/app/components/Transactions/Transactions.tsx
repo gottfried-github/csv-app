@@ -22,6 +22,7 @@ import {
 import { Transaction } from '@/types/transactions'
 import { throttle } from '@/utils/utils'
 import Edit from './components/Edit'
+import DeleteDialog from './components/DeleteDialog'
 
 const PAGE_SIZE = 15
 
@@ -34,6 +35,7 @@ const Transactions = () => {
   const [pageCurrent, setPageCurrent] = useState(0)
   const [transactionCurrent, setTransactionCurrent] = useState<Transaction | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const { data: dataInitial } = useQuery({
     queryKey: ['transactions'],
@@ -133,8 +135,18 @@ const Transactions = () => {
     setIsEditOpen(true)
   }
 
+  const handleDeleteClick = (transaction: Transaction) => {
+    setTransactionCurrent(transaction)
+    setIsDeleteOpen(true)
+  }
+
   const handleEditClose = () => {
     setIsEditOpen(false)
+    setTransactionCurrent(null)
+  }
+
+  const handleDeleteClose = () => {
+    setIsDeleteOpen(false)
     setTransactionCurrent(null)
   }
 
@@ -201,7 +213,14 @@ const Transactions = () => {
                         >
                           Edit Status
                         </Button>
-                        <Button>Delete</Button>
+                        <Button
+                          color="red"
+                          onClick={() => {
+                            handleDeleteClick(transaction)
+                          }}
+                        >
+                          Delete
+                        </Button>
                       </FlexHorizontal>
                     </Td>
                   </Tr>
@@ -220,13 +239,25 @@ const Transactions = () => {
             </FlexHorizontal>
           </Center>
           {transactionCurrent ? (
-            <Edit
-              transaction={transactionCurrent}
-              statuses={data.filters.status}
-              queryKey={queryKey}
-              isOpen={isEditOpen}
-              handleClose={handleEditClose}
-            />
+            <>
+              {isEditOpen ? (
+                <Edit
+                  transaction={transactionCurrent}
+                  statuses={data.filters.status}
+                  queryKey={queryKey}
+                  isOpen={isEditOpen}
+                  handleClose={handleEditClose}
+                />
+              ) : null}
+              {isDeleteOpen ? (
+                <DeleteDialog
+                  transaction={transactionCurrent}
+                  queryKey={queryKey}
+                  isOpen={isDeleteOpen}
+                  handleClose={handleDeleteClose}
+                />
+              ) : null}
+            </>
           ) : null}
         </Container>
       ) : null}
