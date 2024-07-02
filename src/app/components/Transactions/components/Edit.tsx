@@ -1,11 +1,10 @@
-import { useMutation } from '@tanstack/react-query'
+import axios from 'axios'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import {
   Select,
   FormControl,
-  FormLabel,
   FormErrorMessage,
-  FormHelperText,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -17,8 +16,13 @@ import {
 } from '@chakra-ui/react'
 
 import { Transaction } from '@/types/transactions'
+import { GetMany } from '@/types/data'
 import { FlexHorizontal } from '../Transactions'
 import React, { ReactNode } from 'react'
+
+type FormValues = {
+  status?: string
+}
 
 interface Props {
   transaction: Transaction
@@ -29,16 +33,34 @@ interface Props {
 }
 
 const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) => {
-  // const mutation = useMutation({})
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => {
+      return axios.patch(`/transactions/${id}`, { status })
+    },
+    onSuccess: (data, { id, status }) => {
+      queryClient.setQueryData(queryKey, (data: GetMany) => {
+        return {
+          ...data,
+          transactions: data.transactions.map(transaction => {
+            if (transaction.TransactionId !== id) return transaction
+
+            return {
+              ...transaction,
+              Status: status,
+            }
+          }),
+        }
+      })
+    },
+  })
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-    trigger,
-    control,
-  } = useForm({
+  } = useForm<FormValues>({
     mode: 'onChange',
     defaultValues: {
       status: transaction.Status,
@@ -59,8 +81,6 @@ const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) =
         errors.status = 'Invalid status'
       }
 
-      console.log('resolver, values, errors:', values, errors)
-
       return {
         values,
         errors,
@@ -68,7 +88,11 @@ const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) =
     },
   })
 
-  // const handleSubmitInner = values => {}
+  const handleSubmitInner = (values: FormValues) => {
+    if (!values.status || !transaction.TransactionId) return
+
+    mutation.mutate({ id: transaction.TransactionId, status: values.status })
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
@@ -92,7 +116,9 @@ const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) =
 
         <ModalFooter>
           <FlexHorizontal>
-            <Button colorScheme="blue">Update Status</Button>
+            <Button colorScheme="blue" onClick={handleSubmit(handleSubmitInner)}>
+              Update Status
+            </Button>
             <Button mr={3} onClick={handleClose}>
               Close
             </Button>
