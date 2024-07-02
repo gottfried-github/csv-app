@@ -54,6 +54,16 @@ class Transactions {
 
   async insertMany(transactions: Transaction[]) {
     for (const transaction of transactions) {
+      if (
+        !transaction.TransactionId ||
+        !transaction.Status ||
+        !transaction.Type ||
+        !transaction.ClientName ||
+        !transaction.Amount
+      ) {
+        return
+      }
+
       await db.run(
         `INSERT INTO ${this.tableName} 
           ( TransactionId, Status, Type, ClientName, Amount )
@@ -84,25 +94,14 @@ class Transactions {
   }
 
   async getMany({
-    columns,
     filters,
     searchQuery,
     sort = { column: 'clientName', asc: true },
     page = 0,
   }: GetManyProps) {
+    if (typeof page !== 'number') throw new TypeError('page is not a number')
+
     /* Construct the SQL query */
-
-    /* column names */
-    let columnsQuery = ''
-
-    columns?.forEach(column => {
-      if (!COLUMNS_NAMES[column]) return
-
-      columnsQuery += `${columnsQuery ? ', ' : ''}${COLUMNS_NAMES[column]}`
-    })
-
-    columnsQuery = columnsQuery ? columnsQuery : '*'
-
     /* filters */
     let filtersQuery = ''
 
@@ -126,10 +125,10 @@ class Transactions {
     const sortQuery = `ORDER BY ${COLUMNS_NAMES[sort.column] || COLUMNS_NAMES.clientName} ${
       sort.asc ? 'ASC' : 'DESC'
     }`
-    const paginationQuery = `LIMIT ${PAGE_SIZE}${page > 0 ? ' OFFSET $offset' : ''}`
+    const paginationQuery = `LIMIT ${PAGE_SIZE}${page > 0 ? ` OFFSET ${page * PAGE_SIZE}` : ''}`
 
     /* the whole query */
-    const query = `SELECT ${columnsQuery} FROM ${this.tableName}${
+    const query = `SELECT * FROM ${this.tableName}${
       filtersQuery ? ` WHERE ${filtersQuery}` : ''
     } ${sortQuery} ${paginationQuery}`
 
@@ -143,7 +142,6 @@ class Transactions {
     })
 
     if (searchQuery) params.$searchQuery = `%${searchQuery}%`
-    if (page > 0) params.$offset = page * PAGE_SIZE
 
     /* Make the query */
     const transactions = await db.all<Transaction[]>(query, params)
@@ -169,6 +167,21 @@ class Transactions {
       },
       transactions,
     }
+  }
+
+  async getAll({ columns }: GetManyProps) {
+    /* column names */
+    let columnsQuery = ''
+
+    columns?.forEach(column => {
+      if (!COLUMNS_NAMES[column]) return
+
+      columnsQuery += `${columnsQuery ? ', ' : ''}${COLUMNS_NAMES[column]}`
+    })
+
+    columnsQuery = columnsQuery ? columnsQuery : '*'
+
+    return db.all<Transaction[]>(`SELECT ${columnsQuery} FROM ${this.tableName}`)
   }
 }
 

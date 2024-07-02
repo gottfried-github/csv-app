@@ -19,8 +19,6 @@ export const PATCH = async (req: Request, { params }: Context) => {
 }
 
 export const DELETE = async (req: Request, { params }: Context) => {
-  const body = await req.json()
-
   try {
     await transactionsModel.deleteById(params.id)
 

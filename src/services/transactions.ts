@@ -1,3 +1,4 @@
+import { GetManyProps } from '@/models/transactions'
 import transactionsModel from '@/models/transactions'
 import { parse } from 'csv-parse'
 import { stringify } from 'csv-stringify'
@@ -21,8 +22,8 @@ class Transactions {
     })
   }
 
-  async exportCsv() {
-    const transactions = await transactionsModel.getMany({})
+  async exportCsv(config: GetManyProps) {
+    const transactions = await transactionsModel.getAll(config)
 
     return new Promise((resolve, reject) => {
       stringify(transactions, { header: true }, (e, csv) => {
