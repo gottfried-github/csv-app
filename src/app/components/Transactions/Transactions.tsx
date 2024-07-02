@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo, ChangeEvent } from 'react'
 import axios from 'axios'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import styled from '@emotion/styled'
 import {
+  chakra,
   Input,
   Select,
   Button,
@@ -36,6 +37,8 @@ const Transactions = () => {
   const [transactionCurrent, setTransactionCurrent] = useState<Transaction | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+
+  const queryClient = useQueryClient()
 
   const { data: dataInitial } = useQuery({
     queryKey: ['transactions'],
@@ -117,6 +120,22 @@ const Transactions = () => {
     setSortAsc(!sortAsc)
   }
 
+  const handleFileInputChange = async (ev: ChangeEvent<HTMLInputElement>) => {
+    if (!ev.target.files?.length) return
+
+    const file = ev.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    await axios.post('/transactions/csv', formData)
+
+    queryClient.invalidateQueries({
+      queryKey,
+    })
+  }
+
   const handlePreviousClick = () => {
     if (pageCurrent === 0) return
 
@@ -179,7 +198,22 @@ const Transactions = () => {
               <Button onClick={handleSortAscChange}>{sortAsc ? 'DESC' : 'ASC'}</Button>
             </FlexHorizontal>
             <FlexHorizontal>
-              <Button>Import</Button>
+              <input
+                type="file"
+                multiple={false}
+                accept=".csv"
+                hidden
+                onChange={handleFileInputChange}
+                id="import"
+              />
+              <ImportButton
+                bg="gray.100"
+                _hover={{ background: 'gray.200' }}
+                borderRadius="md"
+                htmlFor="import"
+              >
+                Import
+              </ImportButton>
               <Button>Export</Button>
             </FlexHorizontal>
           </Flex>
@@ -269,4 +303,10 @@ const Container = styled(Flex)`
 
 export const FlexHorizontal = styled(Flex)`
   column-gap: 6px;
+  align-items: center;
+`
+
+const ImportButton = styled(chakra.label)`
+  font-weight: 600;
+  padding: 8px;
 `

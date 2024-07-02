@@ -1,3 +1,4 @@
+import { GetManyProps } from '@/models/transactions'
 import transactionsModel from '@/models/transactions'
 import { parse } from 'csv-parse'
 import { stringify } from 'csv-stringify'
