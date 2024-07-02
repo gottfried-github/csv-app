@@ -18,6 +18,10 @@ import {
   TableContainer,
   Flex,
   Center,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react'
 
 import { Transaction } from '@/types/transactions'
@@ -42,7 +46,7 @@ const Transactions = () => {
 
   const queryClient = useQueryClient()
 
-  const { data: dataInitial } = useQuery({
+  const { data: dataInitial, isError: isErrorInitial } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
       const { data } = await axios.get(`/transactions`)
@@ -58,6 +62,7 @@ const Transactions = () => {
 
   const {
     data: dataDynamic,
+    isError: isErrorDynamic,
     isSuccess,
     isLoading,
   } = useQuery({
@@ -92,6 +97,11 @@ const Transactions = () => {
   const data = useMemo(
     () => (isLoading ? dataInitial : dataDynamic),
     [dataInitial, dataDynamic, isLoading]
+  )
+
+  const isError = useMemo(
+    () => (isErrorInitial ? (isSuccess ? false : isErrorDynamic) : isErrorDynamic),
+    [isErrorInitial, isErrorDynamic, isSuccess]
   )
 
   const pageCount = useMemo(() => Math.ceil(data.count / PAGE_SIZE), [data.count])
@@ -202,7 +212,13 @@ const Transactions = () => {
 
   return (
     <>
-      {data ? (
+      {isError ? (
+        <Alert status="error">
+          <AlertIcon />
+          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertDescription>Please refresh your page</AlertDescription>
+        </Alert>
+      ) : data ? (
         <Container direction="column">
           <Input onInput={handleSearchInput} />
           <Flex justify="space-between">
