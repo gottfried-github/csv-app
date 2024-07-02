@@ -28,7 +28,7 @@ interface Props {
   transaction: Transaction
   statuses: string[]
   queryKey: (string | number | boolean)[]
-  isOpen: boolean
+  // isOpen: boolean
   handleClose: () => void
 }
 
@@ -95,7 +95,7 @@ const Edit = ({ transaction, statuses, queryKey, isOpen, handleClose }: Props) =
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={true} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Edit Status</ModalHeader>

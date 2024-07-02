@@ -55,7 +55,6 @@ const Transactions = () => {
     data: dataDynamic,
     isSuccess,
     isLoading,
-    refetch,
   } = useQuery({
     queryKey,
     queryFn: async () => {
@@ -245,15 +244,12 @@ const Transactions = () => {
                   transaction={transactionCurrent}
                   statuses={data.filters.status}
                   queryKey={queryKey}
-                  isOpen={isEditOpen}
                   handleClose={handleEditClose}
                 />
-              ) : null}
-              {isDeleteOpen ? (
+              ) : isDeleteOpen ? (
                 <DeleteDialog
                   transaction={transactionCurrent}
                   queryKey={queryKey}
-                  isOpen={isDeleteOpen}
                   handleClose={handleDeleteClose}
                 />
               ) : null}

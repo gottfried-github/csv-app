@@ -16,11 +16,11 @@ import { Transaction } from '@/types/transactions'
 interface Props {
   transaction: Transaction
   queryKey: (string | number | boolean)[]
-  isOpen: boolean
+  // isOpen: boolean
   handleClose: () => void
 }
 
-const DeleteDialog = ({ transaction, queryKey, isOpen, handleClose }: Props) => {
+const DeleteDialog = ({ transaction, queryKey, handleClose }: Props) => {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
@@ -46,7 +46,7 @@ const DeleteDialog = ({ transaction, queryKey, isOpen, handleClose }: Props) => 
   const cancelRef = useRef(null)
 
   return (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={handleClose}>
+    <AlertDialog isOpen={true} leastDestructiveRef={cancelRef} onClose={handleClose}>
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
